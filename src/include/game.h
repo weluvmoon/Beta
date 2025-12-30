@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "entities.h"
 #include "entity.h"
 #include "raylib.h"
 #include <fstream>
@@ -8,10 +9,12 @@
 #include <vector>
 
 extern Camera2D camera;
+extern EntityManager entities;
 
 class Game {
   public:
     Game() {
+        entities.objects.reserve(7500);
         GameState = GameStates::LEVEL;
 
         cameraZoom = 1.0f;
@@ -20,7 +23,7 @@ class Game {
         camera.zoom = cameraZoom;
 
         saveTo = 1, loadTo = 1;
-        ETool = ETools::TILE, EToolNum = 1.0f;
+        ETool = ETools::TILE, EToolNum = 1.0f, EToolSize = 1.0f;
 
         removeRectSize = {25, 25},
         removeRect = {0, 0, removeRectSize.x, removeRectSize.y};

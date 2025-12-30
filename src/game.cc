@@ -36,6 +36,8 @@ void Game::ManageState() {
         if (IsKeyPressed(KEY_ENTER)) {
             GameState = LEVEL;
         }
+        camera.zoom = cameraZoom;
+        camera.target = cameraTarg;
         break;
     default:
         break;
@@ -49,6 +51,7 @@ void Game::UpdateState(float dt) {
         entities.UpdateAll(dt);
         break;
     case EDITOR:
+        EditLevel();
         break;
     default:
         break;
@@ -75,6 +78,7 @@ void Game::DrawState() {
         entities.DrawAll();
 
         DrawGrid();
+        DrawRectangleLinesEx(removeRect, 1.0f, BLACK);
         EndMode2D();
 
         DrawText("hello", 75, 75, 15, GREEN);
@@ -111,6 +115,48 @@ void Game::DrawGrid() {
     rlEnd();
 }
 
-void Game::EditLevel() {}
+void Game::EditLevel() {
+    float zoomS = 0.1f;
+    float moveS = 5.0f;
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
+    float wheel = GetMouseWheelMove();
+
+    // Snap to grid
+    Vector2 snapped;
+    snapped.x = floor(mousePos.x / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2.0f;
+    snapped.y = floor(mousePos.y / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2.0f;
+
+    // Camera zoom
+    camera.zoom = cameraZoom;
+    camera.target = cameraTarg;
+    cameraZoom = std::clamp(cameraZoom + wheel * 0.1f, 0.2f, 5.0f);
+
+    // Camera Controls
+    if (IsKeyDown(KEY_MOVE_UP))
+        cameraTarg.y -= moveS;
+    else if (IsKeyDown(KEY_MOVE_DOWN))
+        cameraTarg.y += moveS;
+    if (IsKeyDown(KEY_MOVE_LEFT))
+        cameraTarg.x -= moveS;
+    else if (IsKeyDown(KEY_MOVE_RIGHT))
+        cameraTarg.x += moveS;
+
+    // Tool rectangle
+    removeRectSize = {EToolSize * GRID_SIZE, EToolSize * GRID_SIZE};
+    removeRect = {
+        snapped.x - removeRectSize.x / 2,
+        snapped.y - removeRectSize.y / 2,
+        removeRectSize.x,
+    };
+
+    if (IsKeyPressed(KEY_NEXT_TOOL_NUM))
+        EToolNum++;
+    if (IsKeyPressed(KEY_LAST_TOOL_NUM))
+        EToolNum--;
+    if (IsKeyPressed(KEY_NEXT_TOOL_SIZE))
+        EToolSize++;
+    if (IsKeyPressed(KEY_LAST_TOOL_SIZE))
+        EToolSize--;
+}
 
 void Game::SpawnEntity() {}
